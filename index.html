@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Fluency 2 - Ultimate Study Edition</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-inner: #0f172a;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --correct: #10b981;
+      --incorrect: #ef4444;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Module Selector */
+    .module-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .module-btn {
+      flex: 1;
+      background-color: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .module-btn.active {
+      background-color: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Controls Grid */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-group label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    select, input[type="text"] {
+      background-color: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .audio-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-left: 8px;
+      vertical-align: middle;
+      transition: transform 0.1s;
+    }
+
+    .audio-btn:hover {
+      transform: scale(1.2);
+    }
+
+    /* Scoreboard & Timer */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      text-align: center;
+    }
+
+    .stat-card {
+      background-color: var(--card-inner);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Timer Bar */
+    .timer-progress-container {
+      width: 100%;
+      height: 6px;
+      background-color: var(--card-inner);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .timer-progress-bar {
+      height: 100%;
+      width: 100%;
+      background-color: var(--accent);
+      transition: width 1s linear, background-color 0.3s;
+    }
+
+    /* Question Container */
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      background-color: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .question-prompt {
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+      margin: 15px 0;
+      padding: 20px;
+      background-color: var(--card-inner);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .sentence-prompt {
+      font-style: italic;
+      color: #cbd5e1;
+    }
+
+    /* Options / Inputs */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .option-btn {
+      background-color: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 18px;
+      border-radius: 10px;
+      text-align: left;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    .option-btn.correct {
+      background-color: rgba(16, 185, 129, 0.2) !important;
+      border-color: var(--correct) !important;
+      color: #6ee7b7 !important;
+    }
+
+    .option-btn.incorrect {
+      background-color: rgba(239, 68, 68, 0.2) !important;
+      border-color: var(--incorrect) !important;
+      color: #fca5a5 !important;
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .explanation-box {
+      background-color: rgba(99, 102, 241, 0.15);
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .explanation-title {
+      font-weight: bold;
+      color: #a5b4fc;
+      margin-bottom: 4px;
+    }
+
+    .input-feedback {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .input-feedback.correct {
+      display: block;
+      background-color: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--correct);
+      color: #6ee7b7;
+    }
+
+    .input-feedback.incorrect {
+      display: block;
+      background-color: rgba(239, 68, 68, 0.2);
+      border: 1px solid var(--incorrect);
+      color: #fca5a5;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: none;
+    }
+
+    .dash-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .dash-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .tab-btn.active {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    .list-container {
+      max-height: 350px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 5px;
+    }
+
+    .list-item {
+      background-color: var(--card-inner);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .list-item.err {
+      border-left: 4px solid var(--incorrect);
+    }
+
+    .list-item.acc {
+      border-left: 4px solid var(--correct);
+    }
+
+    .item-q { font-weight: bold; margin-bottom: 4px; color: var(--text); }
+    .item-ans { color: var(--text-muted); }
+    .item-ans span { color: var(--correct); font-weight: 600; }
+    .item-user-ans { color: var(--incorrect); font-weight: 600; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fluency 2 - Ultimate Study Edition</h1>
+    <p>Phrasal Verbs, Expressions & Indirect Speech</p>
+  </header>
+
+  <div class="container">
+    
+    <!-- Configurações do Quiz -->
+    <div class="card">
+      <div class="module-selector">
+        <button id="mod-vocab-btn" class="module-btn active" onclick="setModule('vocab')">
+          📖 Phrasal Verbs & Expressions
+        </button>
+        <button id="mod-speech-btn" class="module-btn" onclick="setModule('speech')">
+          💬 Indirect Speech
+        </button>
+      </div>
+
+      <div class="controls-grid">
+        <div class="control-group" id="lesson-group">
+          <label for="lesson-select">Selecione a Lição</label>
+          <select id="lesson-select">
+            <option value="all">Todas as Lições (1 a 5)</option>
+            <option value="1">Lesson 1</option>
+            <option value="2">Lesson 2</option>
+            <option value="3">Lesson 3</option>
+            <option value="4">Lesson 4</option>
+            <option value="5">Lesson 5</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="difficulty-select">Nível de Dificuldade</label>
+          <select id="difficulty-select">
+            <option value="easy">🟢 Fácil (Múltipla Escolha)</option>
+            <option value="medium">🟡 Médio (Completar Frase)</option>
+            <option value="hard">🔴 Difícil (Digitar a Resposta)</option>
+          </select>
+        </div>
+
+        <div class="control-group" id="direction-group">
+          <label for="direction-select">Direção da Pergunta</label>
+          <select id="direction-select">
+            <option value="en-pt">Inglês ➔ Português</option>
+            <option value="pt-en">Português ➔ Inglês</option>
+            <option value="mixed">Misto (Aleatório)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="timer-select">Temporizador (Por Pergunta)</label>
+          <select id="timer-select">
+            <option value="off">⏱️ Desativado</option>
+            <option value="30">⏱️ 30 Segundos</option>
+            <option value="15">⏱️ 15 Segundos (Desafio)</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn btn-full">
+        🔄 Iniciar / Reiniciar Quiz
+      </button>
+    </div>
+
+    <!-- Estatísticas em Tempo Real -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value" id="correct-count" style="color: var(--correct)">0</div>
+        <div class="stat-label">Acertos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="incorrect-count" style="color: var(--incorrect)">0</div>
+        <div class="stat-label">Erros</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="accuracy" style="color: #818cf8">0%</div>
+        <div class="stat-label">Aproveitamento</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="timer-display" style="color: #f59e0b">--</div>
+        <div class="stat-label">Tempo Restante</div>
+      </div>
+    </div>
+
+    <!-- Card Principal do Quiz -->
+    <div id="quiz-card" class="card">
+      <div id="timer-bar-container" class="timer-progress-container hidden">
+        <div id="timer-progress-bar" class="timer-progress-bar"></div>
+      </div>
+
+      <div class="question-header">
+        <span class="badge" id="lesson-badge">Lesson 1</span>
+        <span style="font-size: 0.85rem; color: var(--text-muted);" id="progress-text">Pergunta 1 de 10</span>
+      </div>
+
+      <div class="question-prompt" id="question-prompt">
+        Carregando pergunta...
+      </div>
+
+      <!-- Opções para Fácil e Médio -->
+      <div id="options-container" class="options-grid"></div>
+
+      <!-- Campo para Digitar (Difícil) -->
+      <div id="input-container" class="input-container hidden">
+        <input type="text" id="type-answer" placeholder="Digite sua resposta aqui..." autocomplete="off">
+        <button id="submit-type-btn" class="btn">Confirmar Resposta</button>
+        <div id="input-feedback" class="input-feedback"></div>
+      </div>
+
+      <!-- Caixa de Explicação Gramatical -->
+      <div id="explanation-box" class="explanation-box">
+        <div class="explanation-title">💡 Regra / Explicação Gramatical:</div>
+        <div id="explanation-text"></div>
+      </div>
+
+      <button id="next-btn" class="btn btn-full hidden" style="margin-top: 15px;">
+        Próxima Pergunta ➔
+      </button>
+    </div>
+
+    <!-- Dashboard Final -->
+    <div id="dashboard-card" class="card dashboard">
+      <div class="dash-header">
+        <h2 style="font-size: 1.8rem; margin-bottom: 5px;">🎉 Quiz Concluído!</h2>
+        <p style="color: var(--text-muted)">Veja seu relatório completo de desempenho abaixo</p>
+      </div>
+
+      <div class="dash-stats">
+        <div class="stat-card">
+          <div class="stat-value" id="dash-total">0</div>
+          <div class="stat-label">Total Perguntas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="dash-correct" style="color: var(--correct)">0</div>
+          <div class="stat-label">Acertos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="dash-accuracy" style="color: #818cf8">0%</div>
+          <div class="stat-label">Precisão</div>
+        </div>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('errors')">❌ Erros (<span id="dash-err-count">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('corrects')">✅ Acertos (<span id="dash-acc-count">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('critical')">⭐ Termos Críticos (<span id="dash-crit-count">0</span>)</button>
+      </div>
+
+      <div id="errors-tab" class="list-container"></div>
+      <div id="corrects-tab" class="list-container hidden"></div>
+      <div id="critical-tab" class="list-container hidden"></div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="retry-errors-btn" class="btn" style="flex: 1; background-color: #eab308;">
+          ⚠️ Refazer Apenas Erros
+        </button>
+        <button id="restart-all-btn" class="btn" style="flex: 1;">
+          🔄 Reiniciar Quiz
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // System Web Audio Synth (Sons Interativos Nativos)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'incorrect') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'finish') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+      }
+    }
+
+    // Text To Speech Native Voice
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Banco Vocabulário
+    const vocabData = [
+      { lesson: 1, term: "Call off", translation: "Cancelar", sentence: "They had to _ the football match because of heavy rain." },
+      { lesson: 1, term: "Carry on (with)", translation: "Continuar", sentence: "You should _ your work while I am away." },
+      { lesson: 1, term: "Hold on to", translation: "Ter apego", sentence: "She wants to _ her old childhood toys." },
+      { lesson: 1, term: "Look into", translation: "Investigar", sentence: "The detective will _ the sudden disappearance." },
+      { lesson: 1, term: "See to", translation: "Se encarregar", sentence: "Don't worry about dinner; I will _ it." },
+      { lesson: 1, term: "Turn down", translation: "Recusar", sentence: "He decided to _ the job offer because the salary was low." },
+      { lesson: 1, term: "FOR A CHANGE", translation: "Para variar", sentence: "Let's eat out tonight _." },
+      { lesson: 1, term: "AT A CROSSROADS", translation: "Em uma encruzilhada", sentence: "After graduation, he felt he was _ in his career." },
+
+      // LESSON 2
+      { lesson: 2, term: "Chicken out", translation: "Amarelar", sentence: "He was going to jump off the diving board, but he _ at the last minute." },
+      { lesson: 2, term: "Horse around", translation: "Fazer bagunça", sentence: "Stop _ in the classroom and sit down!" },
+      { lesson: 2, term: "Fish for", translation: "Procurar", sentence: "Are you just trying to _ compliments?" },
+      { lesson: 2, term: "Monkey around", translation: "Se zoar", sentence: "Don't _ with those delicate tools!" },
+      { lesson: 2, term: "Duck out", translation: "Sair de fininho", sentence: "I need to _ of the party early today." },
+      { lesson: 2, term: "Wolf down", translation: "Devorar comida", sentence: "He was so hungry he managed to _ his entire meal in two minutes." },
+      { lesson: 2, term: "BUG SOMEONE", translation: "Incomodar", sentence: "Please stop asking questions, you really _ right now." },
+      { lesson: 2, term: "TOP DOG", translation: "o mais importante", sentence: "He worked hard to become the _ of the company." },
+
+      // LESSON 3
+      { lesson: 3, term: "Bring up", translation: "Criar uma pessoa", sentence: "Her grandparents helped to _ her after her parents moved." },
+      { lesson: 3, term: "Do Away with", translation: "Se livrar", sentence: "The company decided to _ paper files completely." },
+      { lesson: 3, term: "Figure out", translation: "Resolver", sentence: "I can't _ how to solve this math problem." },
+      { lesson: 3, term: "Give in", translation: "Se render", sentence: "After hours of begging, her father finally _." },
+      { lesson: 3, term: "Give up", translation: "Desistir", sentence: "Never _ on your dreams!" },
+      { lesson: 3, term: "Go without", translation: "Ficar sem", sentence: "During the drought, many people had to _ water." },
+      { lesson: 3, term: "CRYING OVER SPILT MILK", translation: "Chorar sobre o leite derramado", sentence: "It's done now, there is no use in _." },
+      { lesson: 3, term: "TURN BACK THE CLOCK", translation: "Voltar no tempo", sentence: "If I could _, I would make different choices." },
+
+      // LESSON 4
+      { lesson: 4, term: "Catch up (with)", translation: "Ficar em dia", sentence: "I need to _ my homework this weekend." },
+      { lesson: 4, term: "Drop out (of)", translation: "Abandonar", sentence: "He chose to _ college to start his own business." },
+      { lesson: 4, term: "Go over", translation: "Revisar", sentence: "Let's _ the contract one more time before signing." },
+      { lesson: 4, term: "Look up", translation: "Pesquisar", sentence: "If you don't know the word, _ it in the dictionary." },
+      { lesson: 4, term: "Take up", translation: "Começar", sentence: "She wants to _ painting as a new hobby." },
+      { lesson: 4, term: "Turn in", translation: "Entregar", sentence: "Please _ your exam papers now." },
+      { lesson: 4, term: "WITH FLYING COLORS", translation: "com louvor", sentence: "She passed her driving test _." },
+      { lesson: 4, term: "IS AS EASY AS ABC", translation: "Muito fácil", sentence: "Learning this basic math rule _." },
+
+      // LESSON 5
+      { lesson: 5, term: "Burn out", translation: "Se esgotar", sentence: "Working 12 hours a day will make you _." },
+      { lesson: 5, term: "Draw up", translation: "criar", sentence: "The lawyer will _ a contract for us." },
+      { lesson: 5, term: "Fall through", translation: "Falhar", sentence: "Our travel plans _ due to bad weather." },
+      { lesson: 5, term: "Knuckle down", translation: "Se dedicar", sentence: "It's time to _ and study for finals." },
+      { lesson: 5, term: "Lay off", translation: "Dispensar", sentence: "The factory had to _ 50 workers." },
+      { lesson: 5, term: "Measure up", translation: "Atender as expectativas", sentence: "The new applicant didn't quite _ to our standards." },
+      { lesson: 5, term: "DOG-EAT-DOG", translation: "Rivalidade", sentence: "The corporate world is a real _ environment." },
+      { lesson: 5, term: "GO THE EXTRA MILE", translation: "se esforçar", sentence: "He always tries to _ for his clients." }
+    ];
+
+    // Banco Indirect Speech com Regras Detalhadas
+    const speechData = [
+      {
+        direct: "I already traveled abroad.",
+        speaker: "He said",
+        indirect: "He said he had already traveled abroad.",
+        blankSentence: "He said he ___ already traveled abroad.",
+        verbCorrect: "had",
+        wrongVerbs: ["has", "have", "would"],
+        grammarRule: "Regra do Past Simple ➔ Past Perfect. O verbo no passado ('traveled') regride um tempo no tempo verbal tornando-se 'had traveled'."
+      },
+      {
+        direct: "I have never played baseball.",
+        speaker: "He said",
+        indirect: "He said he had never played baseball.",
+        blankSentence: "He said he ___ never played baseball.",
+        verbCorrect: "had",
+        wrongVerbs: ["has", "have", "would"],
+        grammarRule: "Regra do Present Perfect ➔ Past Perfect. O auxilar 'have' muda para 'had'."
+      },
+      {
+        direct: "I had slept a lot.",
+        speaker: "She said",
+        indirect: "She said she had slept a lot.",
+        blankSentence: "She said she ___ slept a lot.",
+        verbCorrect: "had",
+        wrongVerbs: ["has", "is having", "slept"],
+        grammarRule: "Regra do Past Perfect ➔ Permanece Past Perfect. Não há regressão temporal possível além do Past Perfect."
+      },
+      {
+        direct: "I am going to save money.",
+        speaker: "She said",
+        indirect: "She said she was going to save money.",
+        blankSentence: "She said she ___ going to save money.",
+        verbCorrect: "was",
+        wrongVerbs: ["is", "were", "had been"],
+        grammarRule: "Regra do Present Continuous/Be going to ➔ Past Continuous. 'am going to' se transforma em 'was going to'."
+      },
+      {
+        direct: "I was going to eat out.",
+        speaker: "He said",
+        indirect: "He said he was going to eat out.",
+        blankSentence: "He said he ___ going to eat out.",
+        verbCorrect: "was",
+        wrongVerbs: ["is", "were", "had"],
+        grammarRule: "Regra de manutençâo do Past Continuous ('was going to')."
+      },
+      {
+        direct: "I will buy a new car.",
+        speaker: "Mary said",
+        indirect: "Mary said she would buy a new car.",
+        blankSentence: "Mary said she ___ buy a new car.",
+        verbCorrect: "would",
+        wrongVerbs: ["will", "can", "should"],
+        grammarRule: "Regra dos Modais: 'Will' torna-se 'Would' no Reported Speech."
+      },
+      {
+        direct: "I would live abroad.",
+        speaker: "She said",
+        indirect: "She said she would live abroad.",
+        blankSentence: "She said she ___ live abroad.",
+        verbCorrect: "would",
+        wrongVerbs: ["will", "can", "is going to"],
+        grammarRule: "Regra dos Modais: 'Would' não sofre alteração no discurso indireto."
+      },
+      {
+        direct: "I can swim fast.",
+        speaker: "He said",
+        indirect: "He said he could swim fast.",
+        blankSentence: "He said he ___ swim fast.",
+        verbCorrect: "could",
+        wrongVerbs: ["can", "will", "would"],
+        grammarRule: "Regra dos Modais: 'Can' muda obrigatoriamente para 'Could'."
+      },
+      {
+        direct: "I may go to the party.",
+        speaker: "Larry said",
+        indirect: "Larry said he might go to the party.",
+        blankSentence: "Larry said he ___ go to the party.",
+        verbCorrect: "might",
+        wrongVerbs: ["may", "must", "can"],
+        grammarRule: "Regra dos Modais: 'May' muda obrigatoriamente para 'Might'."
+      },
+      {
+        direct: "I might be sick.",
+        speaker: "Luke told me",
+        indirect: "Luke told me he might be sick.",
+        blankSentence: "Luke told me he ___ be sick.",
+        verbCorrect: "might",
+        wrongVerbs: ["may", "is", "will"],
+        grammarRule: "Regra dos Modais: 'Might' permanece inalterado no Indirect Speech."
+      },
+      {
+        direct: "I should stop smoking.",
+        speaker: "Martin told us",
+        indirect: "Martin told us he should stop smoking.",
+        blankSentence: "Martin told us he ___ stop smoking.",
+        verbCorrect: "should",
+        wrongVerbs: ["shall", "must", "would"],
+        grammarRule: "Regra dos Modais: 'Should' não muda no Reported Speech."
+      },
+      {
+        direct: "I have been studying Chinese.",
+        speaker: "She said",
+        indirect: "She said she had been studying Chinese.",
+        blankSentence: "She said she ___ studying Chinese.",
+        verbCorrect: "had been",
+        wrongVerbs: ["has been", "was", "is"],
+        grammarRule: "Regra do Present Perfect Continuous ➔ Past Perfect Continuous ('have been' muda para 'had been')."
+      },
+      {
+        direct: "I couldn't wait more.",
+        speaker: "John told her",
+        indirect: "John told her he couldn't wait more.",
+        blankSentence: "John told her he ___ wait more.",
+        verbCorrect: "couldn't",
+        wrongVerbs: ["can't", "won't", "doesn't"],
+        grammarRule: "Regra dos Modais: 'Couldn't' permanece na forma do passado."
+      },
+      {
+        direct: "I must go home.",
+        speaker: "He said",
+        indirect: "He said he had to go home.",
+        blankSentence: "He said he ___ go home.",
+        verbCorrect: "had to",
+        wrongVerbs: ["must", "has to", "should"],
+        grammarRule: "Regra do Modal de Obrigação: 'Must' transforma-se em 'Had to' ao ser reportado no passado."
+      },
+      {
+        direct: "Don't open the window.",
+        speaker: "Joe said",
+        indirect: "Joe told me not to open the window.",
+        blankSentence: "Joe told me ___ to open the window.",
+        verbCorrect: "not",
+        wrongVerbs: ["don't", "didn't", "to not"],
+        grammarRule: "Regra de Imperativo Negativo (Orders/Commands): 'Don't + verbo' vira 'Not to + verbo'."
+      },
+      {
+        direct: "I love learning English.",
+        speaker: "Paul said",
+        indirect: "Paul said he loved learning English.",
+        blankSentence: "Paul said he ___ learning English.",
+        verbCorrect: "loved",
+        wrongVerbs: ["loves", "is loving", "has loved"],
+        grammarRule: "Regra do Present Simple ➔ Past Simple. O verbo 'love' regride para 'loved'."
+      },
+      {
+        direct: "Are you coming to the meeting?",
+        speaker: "Anna asked",
+        indirect: "Anna asked if I was coming to the meeting.",
+        blankSentence: "Anna asked if I ___ coming to the meeting.",
+        verbCorrect: "was",
+        wrongVerbs: ["am", "are", "were"],
+        grammarRule: "Regra de Pergunta Yes/No: Usamos 'If/Whether' e a ordem do verbo volta para a forma declarativa no passado ('was coming')."
+      },
+      {
+        direct: "I don't like fast food.",
+        speaker: "Mark said",
+        indirect: "Mark said he didn't like fast food.",
+        blankSentence: "Mark said he ___ like fast food.",
+        verbCorrect: "didn't",
+        wrongVerbs: ["don't", "doesn't", "hadn't"],
+        grammarRule: "Regra de Negativa no Presente Simple ➔ Negativa no Past Simple ('don't' vira 'didn't')."
+      },
+      {
+        direct: "Where do you live?",
+        speaker: "She asked me",
+        indirect: "She asked me where I lived.",
+        blankSentence: "She asked me where I ___.",
+        verbCorrect: "lived",
+        wrongVerbs: ["live", "do live", "was living"],
+        grammarRule: "Regra de Wh-Questions: Mantém o pronome interrogativo ('where'), elimina o auxiliar do presente ('do') e altera o verbo para o passado ('lived')."
+      },
+      {
+        direct: "I am writing an email.",
+        speaker: "David said",
+        indirect: "David said he was writing an email.",
+        blankSentence: "David said he ___ writing an email.",
+        verbCorrect: "was",
+        wrongVerbs: ["is", "has been", "were"],
+        grammarRule: "Regra do Present Continuous ➔ Past Continuous ('am writing' vira 'was writing')."
+      }
+    ];
+
+    // Estado Geral da Aplicação
+    let currentModule = 'vocab';
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = { correct: 0, incorrect: 0 };
+    let history = [];
+
+    // Temporizador
+    let timerInterval = null;
+    let timeLeft = 0;
+    let totalTimeAllowed = 0;
+
+    // Gerenciador de Erros Críticos (LocalStorage)
+    let criticalTracker = JSON.parse(localStorage.getItem('fluency2_critical_v1')) || {};
+
+    // Elementos DOM
+    const lessonGroup = document.getElementById('lesson-group');
+    const directionGroup = document.getElementById('direction-group');
+    const lessonSelect = document.getElementById('lesson-select');
+    const difficultySelect = document.getElementById('difficulty-select');
+    const directionSelect = document.getElementById('direction-select');
+    const timerSelect = document.getElementById('timer-select');
+    const startBtn = document.getElementById('start-btn');
+
+    const correctCountEl = document.getElementById('correct-count');
+    const incorrectCountEl = document.getElementById('incorrect-count');
+    const accuracyEl = document.getElementById('accuracy');
+    const timerDisplay = document.getElementById('timer-display');
+    const timerBarContainer = document.getElementById('timer-bar-container');
+    const timerProgressBar = document.getElementById('timer-progress-bar');
+
+    const quizCard = document.getElementById('quiz-card');
+    const dashboardCard = document.getElementById('dashboard-card');
+
+    const lessonBadge = document.getElementById('lesson-badge');
+    const progressText = document.getElementById('progress-text');
+    const questionPrompt = document.getElementById('question-prompt');
+    const optionsContainer = document.getElementById('options-container');
+
+    const inputContainer = document.getElementById('input-container');
+    const typeAnswerInput = document.getElementById('type-answer');
+    const submitTypeBtn = document.getElementById('submit-type-btn');
+    const inputFeedback = document.getElementById('input-feedback');
+    const explanationBox = document.getElementById('explanation-box');
+    const explanationText = document.getElementById('explanation-text');
+
+    const nextBtn = document.getElementById('next-btn');
+
+    function setModule(mod) {
+      currentModule = mod;
+      document.getElementById('mod-vocab-btn').classList.toggle('active', mod === 'vocab');
+      document.getElementById('mod-speech-btn').classList.toggle('active', mod === 'speech');
+
+      if (mod === 'speech') {
+        lessonGroup.classList.add('hidden');
+        directionGroup.classList.add('hidden');
+      } else {
+        lessonGroup.classList.remove('hidden');
+        directionGroup.classList.remove('hidden');
+      }
+
+      initQuiz();
+    }
+
+    startBtn.addEventListener('click', () => initQuiz());
+    nextBtn.addEventListener('click', () => nextQuestion());
+    submitTypeBtn.addEventListener('click', () => handleTypeAnswer());
+    
+    typeAnswerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleTypeAnswer();
+    });
+
+    document.getElementById('restart-all-btn').addEventListener('click', () => initQuiz());
+    document.getElementById('retry-errors-btn').addEventListener('click', () => retryErrors());
+
+    function initQuiz(customItems = null) {
+      clearInterval(timerInterval);
+
+      let filtered = [];
+
+      if (customItems) {
+        filtered = customItems;
+      } else {
+        if (currentModule === 'vocab') {
+          const selectedLesson = lessonSelect.value;
+          filtered = selectedLesson === 'all' 
+            ? [...vocabData] 
+            : vocabData.filter(item => item.lesson == selectedLesson);
+        } else {
+          filtered = [...speechData];
+        }
+      }
+
+      if (filtered.length === 0) {
+        alert("Nenhuma questão disponível para esta combinação!");
+        return;
+      }
+
+      currentQuestions = filtered.sort(() => Math.random() - 0.5);
+      currentIndex = 0;
+      score = { correct: 0, incorrect: 0 };
+      history = [];
+
+      updateScoreboard();
+      
+      quizCard.classList.remove('hidden');
+      dashboardCard.classList.add('hidden');
+
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      clearInterval(timerInterval);
+      nextBtn.classList.add('hidden');
+      explanationBox.style.display = 'none';
+      inputFeedback.className = 'input-feedback';
+      inputFeedback.style.display = 'none';
+      typeAnswerInput.value = '';
+      typeAnswerInput.disabled = false;
+      submitTypeBtn.disabled = false;
+
+      const q = currentQuestions[currentIndex];
+      const diff = difficultySelect.value;
+
+      progressText.textContent = `Pergunta ${currentIndex + 1} de ${currentQuestions.length}`;
+
+      // Configurar Áudio Pronúncia Nativamente
+      if (currentModule === 'vocab') {
+        const dir = getDirection(directionSelect.value);
+        lessonBadge.textContent = `Lesson ${q.lesson}`;
+
+        if (diff === 'easy') {
+          optionsContainer.classList.remove('hidden');
+          inputContainer.classList.add('hidden');
+
+          if (dir === 'en-pt') {
+            questionPrompt.innerHTML = `Qual a tradução para:<br><strong style="color: #a855f7; font-size: 1.5rem;">${q.term}</strong> <button class="audio-btn" onclick="speakText('${q.term}')">🔊</button>`;
+            renderOptions(q.translation, 'pt');
+          } else {
+            questionPrompt.innerHTML = `Qual a expressão/phrasal verb para:<br><strong style="color: #a855f7; font-size: 1.5rem;">${q.translation}</strong>`;
+            renderOptions(q.term, 'en');
+          }
+        } 
+        else if (diff === 'medium') {
+          optionsContainer.classList.remove('hidden');
+          inputContainer.classList.add('hidden');
+
+          const formattedSentence = q.sentence.replace('___', '<span style="color:#6366f1; text-decoration: underline;">___</span>');
+          questionPrompt.innerHTML = `
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">ESCOLHA A EXPRESSÃO CORRETA PARA ENCAIXAR NA FRASE:</div>
+            <div class="sentence-prompt">"${formattedSentence}" <button class="audio-btn" onclick="speakText('${q.sentence.replace('___', q.term)}')">🔊</button></div>
+          `;
+
+          renderOptions(q.term, 'en');
+        } 
+        else if (diff === 'hard') {
+          optionsContainer.classList.add('hidden');
+          inputContainer.classList.remove('hidden');
+
+          if (dir === 'en-pt') {
+            questionPrompt.innerHTML = `Digite a tradução em português para:<br><strong style="color: #a855f7; font-size: 1.5rem;">${q.term}</strong> <button class="audio-btn" onclick="speakText('${q.term}')">🔊</button>`;
+          } else {
+            questionPrompt.innerHTML = `Digite o phrasal verb/expressão para:<br><strong style="color: #a855f7; font-size: 1.5rem;">${q.translation}</strong>`;
+          }
+        }
+      } 
+      else {
+        // INDIRECT SPEECH
+        lessonBadge.textContent = `Indirect Speech`;
+
+        if (diff === 'easy') {
+          optionsContainer.classList.remove('hidden');
+          inputContainer.classList.add('hidden');
+
+          questionPrompt.innerHTML = `
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">CONVERTA PARA INDIRECT SPEECH:</div>
+            <div class="sentence-prompt">"${q.speaker}: '${q.direct}'" <button class="audio-btn" onclick="speakText('${q.direct}')">🔊</button></div>
+          `;
+
+          renderSpeechOptions(q.indirect);
+        }
+        else if (diff === 'medium') {
+          optionsContainer.classList.remove('hidden');
+          inputContainer.classList.add('hidden');
+
+          const blankSentenceFormatted = q.blankSentence.replace('___', '<span style="color:#6366f1; text-decoration: underline;">___</span>');
+
+          questionPrompt.innerHTML = `
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">COMPLETE A ESTRUTURA DE INDIRECT SPEECH:</div>
+            <div style="font-size: 1rem; color: var(--text-muted); margin-bottom: 12px;">Direct: "${q.direct}" <button class="audio-btn" onclick="speakText('${q.direct}')">🔊</button></div>
+            <div class="sentence-prompt">"${blankSentenceFormatted}"</div>
+          `;
+
+          renderSpeechVerbOptions(q.verbCorrect, q.wrongVerbs);
+        }
+        else if (diff === 'hard') {
+          optionsContainer.classList.add('hidden');
+          inputContainer.classList.remove('hidden');
+
+          questionPrompt.innerHTML = `
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">ESCREVA A FRASE COMPLETA EM INDIRECT SPEECH:</div>
+            <div class="sentence-prompt">"${q.speaker}: '${q.direct}'" <button class="audio-btn" onclick="speakText('${q.direct}')">🔊</button></div>
+          `;
+        }
+      }
+
+      startTimer();
+    }
+
+    function startTimer() {
+      const mode = timerSelect.value;
+      if (mode === 'off') {
+        timerBarContainer.classList.add('hidden');
+        timerDisplay.textContent = '--';
+        return;
+      }
+
+      timerBarContainer.classList.remove('hidden');
+      totalTimeAllowed = parseInt(mode, 10);
+      timeLeft = totalTimeAllowed;
+      
+      updateTimerUI();
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerUI();
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          handleTimeOut();
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      timerDisplay.textContent = `${timeLeft}s`;
+      const perc = (timeLeft / totalTimeAllowed) * 100;
+      timerProgressBar.style.width = `${perc}%`;
+
+      if (perc > 50) {
+        timerProgressBar.style.backgroundColor = 'var(--accent)';
+      } else if (perc > 20) {
+        timerProgressBar.style.backgroundColor = '#f59e0b';
+      } else {
+        timerProgressBar.style.backgroundColor = 'var(--incorrect)';
+      }
+    }
+
+    function handleTimeOut() {
+      playSound('incorrect');
+      score.incorrect++;
+
+      const currentQ = currentQuestions[currentIndex];
+      recordCriticalError(currentQ);
+
+      const diff = difficultySelect.value;
+      if (diff === 'hard') {
+        typeAnswerInput.disabled = true;
+        submitTypeBtn.disabled = true;
+        inputFeedback.className = 'input-feedback incorrect';
+        inputFeedback.innerHTML = `⏰ <strong>Tempo Esgotado!</strong>`;
+      } else {
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        buttons.forEach(b => b.disabled = true);
+      }
+
+      showExplanation(currentQ);
+      updateScoreboard();
+      nextBtn.classList.remove('hidden');
+    }
+
+    function renderOptions(correctAnswer, targetType) {
+      optionsContainer.innerHTML = '';
+
+      let pool = vocabData.map(item => targetType === 'pt' ? item.translation : item.term);
+      pool = [...new Set(pool)].filter(ans => ans !== correctAnswer);
+      
+      let wrongOptions = pool.sort(() => Math.random() - 0.5).slice(0, 3);
+      let allOptions = [correctAnswer, ...wrongOptions].sort(() => Math.random() - 0.5);
+
+      allOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span>${opt}</span><span class="icon"></span>`;
+        btn.onclick = () => handleOptionSelect(btn, opt, correctAnswer);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function renderSpeechOptions(correctAnswer) {
+      optionsContainer.innerHTML = '';
+
+      let pool = speechData.map(item => item.indirect).filter(ans => ans !== correctAnswer);
+      let wrongOptions = pool.sort(() => Math.random() - 0.5).slice(0, 3);
+      let allOptions = [correctAnswer, ...wrongOptions].sort(() => Math.random() - 0.5);
+
+      allOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span>${opt}</span><span class="icon"></span>`;
+        btn.onclick = () => handleOptionSelect(btn, opt, correctAnswer);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function renderSpeechVerbOptions(correctVerb, wrongVerbs) {
+      optionsContainer.innerHTML = '';
+
+      let allOptions = [correctVerb, ...wrongVerbs].sort(() => Math.random() - 0.5);
+
+      allOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span>${opt}</span><span class="icon"></span>`;
+        btn.onclick = () => handleOptionSelect(btn, opt, correctVerb);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleOptionSelect(selectedBtn, selectedValue, correctAnswer) {
+      clearInterval(timerInterval);
+
+      const buttons = optionsContainer.querySelectorAll('.option-btn');
+      buttons.forEach(b => b.disabled = true);
+
+      const isCorrect = selectedValue === correctAnswer;
+      const currentQ = currentQuestions[currentIndex];
+
+      if (isCorrect) {
+        playSound('correct');
+        selectedBtn.classList.add('correct');
+        score.correct++;
+      } else {
+        playSound('incorrect');
+        selectedBtn.classList.add('incorrect');
+        score.incorrect++;
+        recordCriticalError(currentQ);
+        buttons.forEach(b => {
+          if (b.textContent.includes(correctAnswer)) {
+            b.classList.add('correct');
+          }
+        });
+      }
+
+      history.push({
+        question: currentQ,
+        userAnswer: selectedValue,
+        correctAnswer: correctAnswer,
+        isCorrect: isCorrect
+      });
+
+      showExplanation(currentQ);
+      updateScoreboard();
+      nextBtn.classList.remove('hidden');
+    }
+
+    function handleTypeAnswer() {
+      clearInterval(timerInterval);
+
+      const userVal = typeAnswerInput.value.trim();
+      if (!userVal) return;
+
+      const currentQ = currentQuestions[currentIndex];
+      let correctAnswer = "";
+
+      if (currentModule === 'vocab') {
+        const dir = getDirection(directionSelect.value);
+        correctAnswer = dir === 'en-pt' ? currentQ.translation : currentQ.term;
+      } else {
+        correctAnswer = currentQ.indirect;
+      }
+
+      const isCorrect = normalizeString(userVal) === normalizeString(correctAnswer);
+
+      typeAnswerInput.disabled = true;
+      submitTypeBtn.disabled = true;
+
+      if (isCorrect) {
+        playSound('correct');
+        score.correct++;
+        inputFeedback.className = 'input-feedback correct';
+        inputFeedback.innerHTML = `<strong>Resposta Correta!</strong> 🎉`;
+      } else {
+        playSound('incorrect');
+        score.incorrect++;
+        recordCriticalError(currentQ);
+        inputFeedback.className = 'input-feedback incorrect';
+        inputFeedback.innerHTML = `<strong>Incorreto!</strong> Esperado: <strong>${correctAnswer}</strong>`;
+      }
+
+      history.push({
+        question: currentQ,
+        userAnswer: userVal,
+        correctAnswer: correctAnswer,
+        isCorrect: isCorrect
+      });
+
+      showExplanation(currentQ);
+      updateScoreboard();
+      nextBtn.classList.remove('hidden');
+    }
+
+    function showExplanation(q) {
+      explanationBox.style.display = 'block';
+      if (currentModule === 'vocab') {
+        explanationText.textContent = `${q.term} (${q.translation}): ${q.note}`;
+      } else {
+        explanationText.textContent = q.grammarRule;
+      }
+    }
+
+    function recordCriticalError(q) {
+      const key = currentModule === 'vocab' ? q.term : q.direct;
+      if (!criticalTracker[key]) {
+        criticalTracker[key] = {
+          title: key,
+          module: currentModule,
+          count: 0,
+          detail: currentModule === 'vocab' ? `${q.term} = ${q.translation}` : `${q.speaker}: '${q.direct}' ➔ ${q.indirect}`
+        };
+      }
+      criticalTracker[key].count++;
+      localStorage.setItem('fluency2_critical_v1', JSON.stringify(criticalTracker));
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < currentQuestions.length) {
+        loadQuestion();
+      } else {
+        playSound('finish');
+        renderDashboard();
+      }
+    }
+
+    function updateScoreboard() {
+      correctCountEl.textContent = score.correct;
+      incorrectCountEl.textContent = score.incorrect;
+      
+      const total = score.correct + score.incorrect;
+      const perc = total > 0 ? Math.round((score.correct / total) * 100) : 0;
+      accuracyEl.textContent = `${perc}%`;
+    }
+
+    function renderDashboard() {
+      quizCard.classList.add('hidden');
+      dashboardCard.classList.remove('hidden');
+
+      const total = history.length;
+      const accPerc = total > 0 ? Math.round((score.correct / total) * 100) : 0;
+
+      document.getElementById('dash-total').textContent = total;
+      document.getElementById('dash-correct').textContent = score.correct;
+      document.getElementById('dash-accuracy').textContent = `${accPerc}%`;
+
+      const errors = history.filter(h => !h.isCorrect);
+      const corrects = history.filter(h => h.isCorrect);
+
+      document.getElementById('dash-err-count').textContent = errors.length;
+      document.getElementById('dash-acc-count').textContent = corrects.length;
+
+      const retryBtn = document.getElementById('retry-errors-btn');
+      retryBtn.style.display = errors.length === 0 ? 'none' : 'inline-flex';
+
+      const errorsTab = document.getElementById('errors-tab');
+      errorsTab.innerHTML = errors.length === 0 
+        ? '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum erro cometido! Parabéns! 🎉</div>'
+        : errors.map(e => `
+            <div class="list-item err">
+              <div class="item-q">${currentModule === 'vocab' ? `Lesson ${e.question.lesson}:${e.question.term}` : `Direct: ${e.question.direct}`}</div>
+              <div class="item-ans">Sua resposta: <span class="item-user-ans">${e.userAnswer || 'Vazio/Tempo Esgotado'}</span> | Correto: <span>${e.correctAnswer}</span></div>
+            </div>
+          `).join('');
+
+      const correctsTab = document.getElementById('corrects-tab');
+      correctsTab.innerHTML = corrects.length === 0
+        ? '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum acerto nesta rodada.</div>'
+        : corrects.map(c => `
+            <div class="list-item acc">
+              <div class="item-q">${currentModule === 'vocab' ? `Lesson ${c.question.lesson}:${c.question.term}` : `Direct: ${c.question.direct}`}</div>
+              <div class="item-ans">Resposta: <span>${c.correctAnswer}</span></div>
+            </div>
+          `).join('');
+
+      // Aba Termos Críticos Salva no LocalStorage
+      const critList = Object.values(criticalTracker).sort((a,b) => b.count - a.count);
+      document.getElementById('dash-crit-count').textContent = critList.length;
+
+      const criticalTab = document.getElementById('critical-tab');
+      criticalTab.innerHTML = critList.length === 0
+        ? '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Você ainda não tem termos com erros acumulados.</div>'
+        : critList.map(item => `
+            <div class="list-item err">
+              <div class="item-q">${item.title} <span style="font-size:0.75rem; color:#f59e0b;">(${item.count} erros históricos)</span></div>
+              <div class="item-ans">${item.detail}</div>
+            </div>
+          `).join('');
+    }
+
+    function switchTab(tab) {
+      const errTab = document.getElementById('errors-tab');
+      const accTab = document.getElementById('corrects-tab');
+      const critTab = document.getElementById('critical-tab');
+      const btns = document.querySelectorAll('.tab-btn');
+
+      errTab.classList.add('hidden');
+      accTab.classList.add('hidden');
+      critTab.classList.add('hidden');
+      btns.forEach(b => b.classList.remove('active'));
+
+      if (tab === 'errors') {
+        errTab.classList.remove('hidden');
+        btns[0].classList.add('active');
+      } else if (tab === 'corrects') {
+        accTab.classList.remove('hidden');
+        btns[1].classList.add('active');
+      } else if (tab === 'critical') {
+        critTab.classList.remove('hidden');
+        btns[2].classList.add('active');
+      }
+    }
+
+    function retryErrors() {
+      const errorQuestions = history.filter(h => !h.isCorrect).map(h => h.question);
+      if (errorQuestions.length > 0) {
+        initQuiz(errorQuestions);
+      }
+    }
+
+    function getDirection(val) {
+      if (val === 'mixed') {
+        return Math.random() > 0.5 ? 'en-pt' : 'pt-en';
+      }
+      return val;
+    }
+
+    function normalizeString(str) {
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s]/g, "")
+        .trim();
+    }
+
+    initQuiz();
+  </script>
+</body>
+</html>
